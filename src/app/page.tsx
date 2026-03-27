@@ -423,7 +423,7 @@ function SectionSvg({
           src={src}
           alt=""
           aria-hidden="true"
-          className="md:hidden h-[86px] w-auto"
+          className="md:hidden h-[86px] w-auto mx-auto"
           style={{ filter: "brightness(0) invert(1)" }}
         />
       </div>
@@ -496,18 +496,21 @@ function ImageCarousel({
   images: { src: string; alt: string; num: string; desc: string }[];
   className?: string;
 }) {
+  /* Each item: calc(100vw - 12px - 12px - 24px) wide = viewport minus side padding minus peek.
+     24px of the next image visible. Last item gets 12px right padding. */
+  const itemWidth = "calc(100vw - 48px)";
   return (
-    <div className={`overflow-x-auto scrollbar-hide ${className}`}>
-      <div className="flex gap-3" style={{ width: `${images.length * 70}vw` }}>
+    <div className={`overflow-x-auto scrollbar-hide -mx-3 px-3 ${className}`}>
+      <div className="flex gap-3" style={{ paddingRight: "12px" }}>
         {images.map((img, i) => (
-          <div key={i} className="flex-shrink-0" style={{ width: "65vw" }}>
-            <div className="relative overflow-hidden" style={{ aspectRatio: "3/2" }}>
+          <div key={i} className="flex-shrink-0" style={{ width: itemWidth }}>
+            <div className="relative overflow-hidden" style={{ aspectRatio: "1/1" }}>
               <Image
                 src={img.src}
                 alt={img.alt}
                 fill
                 className="object-cover"
-                sizes="65vw"
+                sizes="80vw"
               />
             </div>
             <div className="flex items-baseline justify-between mt-2 px-1">
@@ -580,7 +583,7 @@ function Hero() {
             src="/images/hero.jpg"
             alt="Concentric circles abstract background"
             fill
-            className="object-cover object-center"
+            className="object-cover object-center md:opacity-100 opacity-50"
             priority
             quality={90}
           />
@@ -602,7 +605,7 @@ function Hero() {
             src="/images/studio.svg"
             alt=""
             aria-hidden="true"
-            className="md:hidden h-[86px] w-auto object-contain select-none"
+            className="md:hidden h-[86px] w-auto mx-auto object-contain select-none"
           />
         </ParallaxSvg>
 
@@ -612,13 +615,13 @@ function Hero() {
           <div className="md:hidden flex gap-3 justify-center mt-[55vh]">
             <a
               href="#contact"
-              className="inline-flex items-center justify-center px-6 py-3 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
             >
               Let&apos;s Meet
             </a>
             <a
               href="#work"
-              className="inline-flex items-center justify-center px-6 py-3 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
             >
               Selected Work
             </a>
@@ -633,7 +636,7 @@ function Hero() {
               <div style={{ paddingLeft: "12px" }} className="flex gap-4 mt-[50vh]">
                 <a
                   href="#contact"
-                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
                 >
                   Let&apos;s Meet
                 </a>
@@ -656,9 +659,9 @@ function Hero() {
         >
           {/* Mobile */}
           <div className="md:hidden">
-            <h1 className="text-[20px] font-normal leading-[1.35] tracking-[0.01em] text-white uppercase mb-4">
+            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase mt-8">
               Intersection of strategy, brand and digital&nbsp;products
-            </h1>
+            </h2>
           </div>
           {/* Desktop */}
           <div className="hidden md:block">
@@ -764,7 +767,7 @@ function Work() {
       </div>
 
       {/* Mobile: swipeable image carousel */}
-      <div className="md:hidden px-3 mt-8 mb-16">
+      <div className="md:hidden px-3 mt-12 mb-20">
         <ImageCarousel images={images} />
       </div>
 
@@ -774,13 +777,13 @@ function Work() {
         <div className="md:hidden flex gap-3">
           <a
             href="#"
-            className="inline-flex items-center justify-center px-8 py-3 text-[16px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
           >
             More Work
           </a>
           <a
             href="#"
-            className="inline-flex items-center justify-center px-8 py-3 text-[16px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
           >
             Experiments
           </a>
@@ -834,7 +837,7 @@ function Approach() {
         <SectionSvg src="/images/how.svg" speed={-0.05} />
 
         {/* Big quote */}
-        <div ref={quoteRef} className="fade-up px-3 mt-8 md:mt-12 mb-16 md:mb-20">
+        <div ref={quoteRef} className="fade-up px-3 mt-12 md:mt-12 mb-16 md:mb-20">
           {/* Mobile */}
           <div className="md:hidden">
             <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
@@ -868,7 +871,7 @@ function Approach() {
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center justify-center px-8 py-3 text-[16px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
             >
               Book a Meeting
             </a>
@@ -954,7 +957,7 @@ function Approach() {
           </div>
         </div>
         {/* Mobile: swipeable carousel */}
-        <div className="md:hidden px-3">
+        <div className="md:hidden px-3 mt-12 mb-8">
           <ImageCarousel images={approachImages} />
         </div>
       </div>
@@ -995,55 +998,57 @@ function What() {
       <div data-grid="3" className="relative py-24 md:py-32 lg:py-40">
         {/* Background image for SVG area */}
         <div className="relative mb-16 md:mb-20">
-          <div className="relative overflow-hidden" style={{ aspectRatio: "auto" }}>
-            {/* Desktop: show image behind SVG */}
-            <div className="hidden md:block relative">
-              <div className="relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
-                <Image
+          {/* Desktop: 2/3 wide image with parallax + slightly overlapping SVG */}
+          <div className="hidden md:block relative">
+            <div
+              className="grid"
+              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+            >
+              <div className="col-span-2">
+                <ParallaxImage
                   src="/images/what-image.jpg"
                   alt="Studio workspace"
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
+                  aspect="1/1"
+                  sizes="66vw"
+                  speed={0.06}
+                  grayscale={false}
+                  className="mix-blend-exclusion"
                 />
               </div>
-              {/* SVG overlaid */}
-              <div className="absolute inset-0 flex items-center">
-                <ParallaxSvg speed={-0.05} className="w-full">
-                  <div className="w-full overflow-hidden mix-blend-difference">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/images/what.svg"
-                      alt=""
-                      aria-hidden="true"
-                      className="w-full h-auto"
-                      style={{ filter: "brightness(0) invert(1)" }}
-                    />
-                  </div>
-                </ParallaxSvg>
-              </div>
+              <div />
             </div>
-            {/* Mobile: image + SVG */}
-            <div className="md:hidden">
-              <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
-                <Image
-                  src="/images/what-image.jpg"
-                  alt="Studio workspace"
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 flex items-center px-3">
+            {/* SVG slightly overlapping from below */}
+            <div className="-mt-16 relative z-10">
+              <SectionSvg src="/images/what.svg" speed={-0.06} />
+            </div>
+          </div>
+          {/* Mobile: 2/3 wide image with parallax + slightly overlapping SVG */}
+          <div className="md:hidden">
+            <div className="px-3" style={{ width: "66.666vw" }}>
+              <ParallaxImage
+                src="/images/what-image.jpg"
+                alt="Studio workspace"
+                aspect="1/1"
+                sizes="66vw"
+                speed={0.06}
+                grayscale={false}
+                className="mix-blend-exclusion"
+              />
+            </div>
+            {/* SVG slightly overlapping */}
+            <div className="-mt-6 relative z-10">
+              <ParallaxSvg speed={-0.06}>
+                <div className="w-full overflow-hidden mix-blend-difference">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/what.svg"
                     alt=""
                     aria-hidden="true"
-                    className="h-[86px] w-auto mix-blend-difference"
+                    className="md:hidden h-[86px] w-auto mx-auto"
                     style={{ filter: "brightness(0) invert(1)" }}
                   />
                 </div>
-              </div>
+              </ParallaxSvg>
             </div>
           </div>
         </div>
@@ -1121,68 +1126,55 @@ function Contact() {
 
   return (
     <section id="contact" className="relative">
-      {/* Top area: TALK SVG + people photos + talk image */}
+      {/* Top area: TALK image + SVG + people photos */}
       <div data-grid="3" className="py-24 md:py-32 lg:py-40">
-        {/* Desktop: 3-col layout with people on sides */}
+        {/* Desktop: talk image (2/3 wide, 1:1, parallax, exclusion) + overlapping SVG, then people below */}
         <div className="hidden md:block relative mb-16">
+          {/* Talk image 2/3 wide */}
           <div
             className="grid"
             style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
           >
+            <div className="col-span-2">
+              <ParallaxImage
+                src="/images/talk-image.jpg"
+                alt="Studio workspace"
+                aspect="1/1"
+                sizes="66vw"
+                speed={0.06}
+                grayscale={false}
+                className="mix-blend-exclusion"
+              />
+            </div>
+            <div />
+          </div>
+          {/* TALK SVG slightly overlapping */}
+          <div className="-mt-16 relative z-10">
+            <SectionSvg src="/images/talk.svg" speed={-0.06} />
+          </div>
+
+          {/* People row */}
+          <div
+            className="grid mt-16"
+            style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+          >
             {/* Left: Lukas */}
             <div style={{ paddingRight: "12px" }}>
-              <ParallaxBlock speed={0.04}>
-                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                  <Image
-                    src="/images/lukas.jpg"
-                    alt="Lukas Mikovec"
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                  />
-                </div>
-                <div className="flex items-baseline justify-between mt-3 px-1">
-                  <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
-                  <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
+              <ParallaxBlock speed={0.1}>
+                <div className="mt-32">
+                  <ParallaxImage src="/images/lukas.jpg" alt="Lukas Mikovec" aspect="3/4" sizes="33vw" speed={0.02} grayscale={false} />
+                  <div className="flex items-baseline justify-between mt-3 px-1">
+                    <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
+                    <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
+                  </div>
                 </div>
               </ParallaxBlock>
             </div>
-
-            {/* Center: TALK SVG + talk-image */}
-            <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
-              <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
-                <Image
-                  src="/images/talk-image.jpg"
-                  alt="Studio workspace"
-                  fill
-                  className="object-cover"
-                  sizes="33vw"
-                />
-                <div className="absolute inset-0 flex items-center justify-center mix-blend-difference">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/images/talk.svg"
-                    alt=""
-                    aria-hidden="true"
-                    className="w-full h-auto px-4"
-                    style={{ filter: "brightness(0) invert(1)" }}
-                  />
-                </div>
-              </div>
-            </div>
-
+            <div />
             {/* Right: Tomas */}
             <div style={{ paddingLeft: "12px" }}>
-              <ParallaxBlock speed={0.06}>
-                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                  <Image
-                    src="/images/tomas.jpg"
-                    alt="Tomas Prochazka"
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                  />
-                </div>
+              <ParallaxBlock speed={0.03}>
+                <ParallaxImage src="/images/tomas.jpg" alt="Tomas Prochazka" aspect="3/4" sizes="33vw" speed={0.02} grayscale={false} />
                 <div className="flex items-baseline justify-between mt-3 px-1">
                   <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Tomas Prochazka</p>
                   <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">02</p>
@@ -1192,58 +1184,71 @@ function Contact() {
           </div>
         </div>
 
-        {/* Mobile: TALK SVG + talk image + people stacked */}
+        {/* Mobile: talk image (2/3 wide, parallax, exclusion) + overlapping SVG + people */}
         <div className="md:hidden mb-8">
-          <div className="relative overflow-hidden mb-4" style={{ aspectRatio: "16/9" }}>
-            <Image
+          {/* Talk image 2/3 wide */}
+          <div className="px-3" style={{ width: "66.666vw" }}>
+            <ParallaxImage
               src="/images/talk-image.jpg"
               alt="Studio workspace"
-              fill
-              className="object-cover"
-              sizes="100vw"
+              aspect="1/1"
+              sizes="66vw"
+              speed={0.06}
+              grayscale={false}
+              className="mix-blend-exclusion"
             />
-            <div className="absolute inset-0 flex items-center px-3 mix-blend-difference">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/talk.svg"
-                alt=""
-                aria-hidden="true"
-                className="h-[86px] w-auto"
-                style={{ filter: "brightness(0) invert(1)" }}
-              />
-            </div>
           </div>
+          {/* SVG slightly overlapping */}
+          <div className="-mt-6 relative z-10 mb-8">
+            <ParallaxSvg speed={-0.06}>
+              <div className="w-full overflow-hidden mix-blend-difference">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/talk.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-[86px] w-auto mx-auto"
+                  style={{ filter: "brightness(0) invert(1)" }}
+                />
+              </div>
+            </ParallaxSvg>
+          </div>
+          {/* People photos with parallax */}
           <div className="grid grid-cols-2 gap-3 px-3">
-            <div>
-              <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                <Image
-                  src="/images/lukas.jpg"
-                  alt="Lukas Mikovec"
-                  fill
-                  className="object-cover"
-                  sizes="50vw"
-                />
+            <ParallaxBlock speed={0.12}>
+              <div className="mt-24">
+                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                  <Image
+                    src="/images/lukas.jpg"
+                    alt="Lukas Mikovec"
+                    fill
+                    className="object-cover"
+                    sizes="50vw"
+                  />
+                </div>
+                <div className="flex items-baseline justify-between mt-2 px-1">
+                  <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
+                  <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
+                </div>
               </div>
-              <div className="flex items-baseline justify-between mt-2 px-1">
-                <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
+            </ParallaxBlock>
+            <ParallaxBlock speed={0.03}>
+              <div className="-mt-12">
+                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                  <Image
+                    src="/images/tomas.jpg"
+                    alt="Tomas Prochazka"
+                    fill
+                    className="object-cover"
+                    sizes="50vw"
+                  />
+                </div>
+                <div className="flex items-baseline justify-between mt-2 px-1">
+                  <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Tomas Prochazka</p>
+                  <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">02</p>
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                <Image
-                  src="/images/tomas.jpg"
-                  alt="Tomas Prochazka"
-                  fill
-                  className="object-cover"
-                  sizes="50vw"
-                />
-              </div>
-              <div className="flex items-baseline justify-between mt-2 px-1">
-                <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Tomas Prochazka</p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">02</p>
-              </div>
-            </div>
+            </ParallaxBlock>
           </div>
         </div>
 
@@ -1340,7 +1345,7 @@ function Contact() {
               <button
                 type="submit"
                 disabled={formState === "sending"}
-                className="inline-flex items-center justify-center px-10 py-3 text-[16px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center px-8 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
               >
                 {formState === "sending" ? "Sending..." : formState === "error" ? "Try Again" : "Let Me Know"}
               </button>
