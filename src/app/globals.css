@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* ─── Grtsk Tera font-face ─── */
+@font-face {
+  font-family: "Grtsk Tera";
+  src:
+    url("/fonts/GrtskTera-Regular.woff2") format("woff2"),
+    url("/fonts/GrtskTera-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Grtsk Tera";
+  src:
+    url("/fonts/GrtskTera-SemiBold.woff2") format("woff2"),
+    url("/fonts/GrtskTera-SemiBold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-bg: #1C1B1A;
+  --color-surface: #161616;
+  --color-text: #ffffff;
+  --color-text-muted: #999999;
+  --color-accent: #ffffff;
+  --color-border: #2a2a2a;
+  --font-sans: "Grtsk Tera", system-ui, -apple-system, sans-serif;
+  --font-display: "Grtsk Tera", system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Hide default cursor on desktop when custom cursor is active */
+@media (pointer: fine) and (min-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    cursor: none !important;
+  }
+  html, body {
+    cursor: none !important;
+  }
+  a, button, input, textarea, select, [role="button"] {
+    cursor: none !important;
+  }
+}
+
+/* Thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+/* SVG section headings - white fill */
+.svg-heading-white svg path {
+  fill: #ffffff;
+}
+
+/* SVG with reduced opacity for layered effect */
+.svg-heading-dim svg path {
+  fill: #1a1a1a;
+}
+
+/* ─── Scroll-triggered fade-in / motion ─── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hide scrollbar for image carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
