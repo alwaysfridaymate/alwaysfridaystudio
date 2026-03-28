@@ -89,6 +89,24 @@ function useParallax(speed = 0.08) {
 }
 
 /* ═══════════════════════════════════════════
+   PARALLAX SPEED SYSTEM
+   Layer 0  SVGs (slowest):     -0.03
+   Layer 1  Backgrounds/images:  0.04
+   Layer 2  Content blocks:      0.06
+   Layer 3  Text/headlines:      0.05
+   Layer 4  Inner image motion:  0.02
+   ═══════════════════════════════════════════ */
+const SPEED = {
+  svg: -0.03,
+  bg: 0.04,
+  block1: 0.04,
+  block2: 0.07,
+  block3: 0.055,
+  text: 0.05,
+  innerImg: 0.02,
+};
+
+/* ═══════════════════════════════════════════
    GRID LINES — section-aware, smooth transitions
    Desktop: 2 lines (3-col) or 3 lines (4-col) depending on section
    Mobile: 1 line at 50%
@@ -96,25 +114,24 @@ function useParallax(speed = 0.08) {
 function GridLines() {
   const [hue, setHue] = useState(310);
   const [targetGrid, setTargetGrid] = useState<"3" | "4">("3");
-  const [lineOpacities, setLineOpacities] = useState([1, 1, 0]); // 3 lines, 3rd starts hidden
-  const [linePositions, setLinePositions] = useState([33.333, 66.666, 50]); // 3rd at center initially
+  const [lineOpacities, setLineOpacities] = useState([1, 1, 0]);
+  const [linePositions, setLinePositions] = useState([33.333, 66.666, 50]);
   const animRef = useRef<number | null>(null);
 
   useEffect(() => {
     let raf: number;
     let prev = performance.now();
-    const SPEED = 4;
+    const SPD = 4;
     const tick = (now: number) => {
       const dt = (now - prev) / 1000;
       prev = now;
-      setHue((h) => (h + SPEED * dt) % 360);
+      setHue((h) => (h + SPD * dt) % 360);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  /* Watch which section is in viewport and update target grid */
   useEffect(() => {
     const updateLines = () => {
       const sections = document.querySelectorAll("[data-grid]");
@@ -136,21 +153,18 @@ function GridLines() {
     return () => window.removeEventListener("scroll", updateLines);
   }, []);
 
-  /* Animate transitions between 2-line and 3-line states */
   useEffect(() => {
     if (animRef.current) cancelAnimationFrame(animRef.current);
 
-    const duration = 600; // ms
+    const duration = 600;
     const start = performance.now();
     const startPositions = [...linePositions];
     const startOpacities = [...lineOpacities];
 
-    // Target states
     const endPositions = targetGrid === "4" ? [25, 50, 75] : [33.333, 66.666, 50];
     const endOpacities = targetGrid === "4" ? [1, 1, 1] : [1, 1, 0];
 
     const ease = (t: number) => {
-      // cubic-bezier(0.25, 0.1, 0.25, 1) approximation
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
 
@@ -238,7 +252,6 @@ function CustomCursor() {
     const el = cursorRef.current;
     if (!el) return;
 
-    // Animation loop for smooth size interpolation
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
     const tick = () => {
@@ -375,7 +388,7 @@ function ParallaxBlock({
    ═══════════════════════════════════════════ */
 function ParallaxSvg({
   children,
-  speed = -0.06,
+  speed = -0.03,
   className = "",
 }: {
   children: React.ReactNode;
@@ -386,7 +399,7 @@ function ParallaxSvg({
   return (
     <div
       ref={ref}
-      className={`will-change-transform overflow-hidden ${className}`}
+      className={`will-change-transform ${className}`}
       style={{ transform: `translateY(${y}px)` }}
     >
       {children}
@@ -395,12 +408,13 @@ function ParallaxSvg({
 }
 
 /* ═══════════════════════════════════════════
-   SECTION SVG — normalized height
-   Desktop: natural size (full width). Mobile: 86px height.
+   SECTION SVG — consistent height across all
+   Desktop: fixed height 180px, full width, overflow hidden.
+   Mobile: 86px height, centered, overflow hidden.
    ═══════════════════════════════════════════ */
 function SectionSvg({
   src,
-  speed = -0.06,
+  speed = SPEED.svg,
   blend = true,
 }: {
   src: string;
@@ -409,7 +423,8 @@ function SectionSvg({
 }) {
   return (
     <ParallaxSvg speed={speed}>
-      <div className={`w-full overflow-hidden ${blend ? "mix-blend-difference" : ""}`}>
+      <div className={`w-full ${blend ? "mix-blend-difference" : ""}`}>
+        {/* Desktop: consistent height, overflow hidden */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -418,14 +433,17 @@ function SectionSvg({
           className="w-full h-auto hidden md:block"
           style={{ filter: "brightness(0) invert(1)" }}
         />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          aria-hidden="true"
-          className="md:hidden h-[86px] w-auto mx-auto"
-          style={{ filter: "brightness(0) invert(1)" }}
-        />
+        {/* Mobile: 86px, centered, overflow hidden */}
+        <div className="md:hidden w-full overflow-hidden h-[86px] flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            aria-hidden="true"
+            className="h-[86px] w-auto"
+            style={{ filter: "brightness(0) invert(1)" }}
+          />
+        </div>
       </div>
     </ParallaxSvg>
   );
@@ -496,8 +514,6 @@ function ImageCarousel({
   images: { src: string; alt: string; num: string; desc: string }[];
   className?: string;
 }) {
-  /* Each item: calc(100vw - 12px - 12px - 24px) wide = viewport minus side padding minus peek.
-     24px of the next image visible. Last item gets 12px right padding. */
   const itemWidth = "calc(100vw - 48px)";
   return (
     <div className={`overflow-x-auto scrollbar-hide -mx-3 px-3 ${className}`}>
@@ -539,7 +555,6 @@ function Nav() {
         >
           ALWAYSFRIDAY
         </a>
-        {/* Desktop nav — evenly distributed between logo and CTA */}
         <div className="hidden md:flex items-center justify-evenly flex-1">
           <a href="#work" className="text-sm md:text-base font-normal tracking-[0.2em] text-white uppercase hover:text-white/70 transition-colors">
             Work
@@ -557,7 +572,6 @@ function Nav() {
         >
           Meet Us
         </a>
-        {/* Mobile menu */}
         <button className="md:hidden text-white ml-auto" aria-label="Menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 8h18M3 16h18" />
@@ -570,35 +584,38 @@ function Nav() {
 
 /* ─── HERO ─── */
 function Hero() {
-  const headRef = useFadeIn<HTMLDivElement>(0.2, "0px 0px -40px 0px", 0.05);
+  const headRef = useFadeIn<HTMLDivElement>(0.2, "0px 0px -40px 0px", SPEED.text);
   const bodyRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.04);
 
   return (
     <section data-grid="3" className="relative">
       {/* Hero image — full viewport */}
       <div className="relative min-h-screen flex flex-col overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/images/hero.jpg"
-            alt="Concentric circles abstract background"
-            fill
-            className="object-cover object-center md:opacity-100 opacity-50"
-            priority
-            quality={90}
-          />
-          {/* Fade gradient at bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#1C1B1A] via-[#1C1B1A]/60 to-transparent" />
-        </div>
+        {/* Background image — slow parallax */}
+        <ParallaxBlock speed={SPEED.bg} className="absolute inset-0">
+          <div className="absolute inset-[-10%]">
+            <Image
+              src="/images/hero.jpg"
+              alt="Concentric circles abstract background"
+              fill
+              className="object-cover object-center opacity-50"
+              priority
+              quality={90}
+            />
+          </div>
+        </ParallaxBlock>
+        {/* Fade gradient at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#1C1B1A] via-[#1C1B1A]/60 to-transparent z-[2]" />
 
-        {/* STUDIO SVG overlay */}
-        <ParallaxSvg speed={-0.04} className="absolute inset-0 flex items-center justify-center z-10 px-4 md:px-8 mix-blend-exclusion pointer-events-none">
+        {/* STUDIO SVG overlay — slowest parallax, normal blend mode */}
+        <ParallaxSvg speed={SPEED.svg} className="absolute inset-0 flex items-center justify-center z-10 px-4 md:px-8 pointer-events-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/studio.svg"
             alt=""
             aria-hidden="true"
             className="w-full h-auto max-h-[45vh] object-contain select-none hidden md:block"
+            style={{ filter: "brightness(0) invert(1)" }}
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -606,60 +623,18 @@ function Hero() {
             alt=""
             aria-hidden="true"
             className="md:hidden h-[86px] w-auto mx-auto object-contain select-none"
+            style={{ filter: "brightness(0) invert(1)" }}
           />
         </ParallaxSvg>
 
-        {/* Hero CTA buttons — mid-hero */}
-        <div className="relative z-20 mt-auto mb-auto px-3 w-full mix-blend-difference">
-          {/* Mobile */}
-          <div className="md:hidden flex gap-3 justify-center mt-[55vh]">
-            <a
-              href="#contact"
-              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
-            >
-              Let&apos;s Meet
-            </a>
-            <a
-              href="#work"
-              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
-            >
-              Selected Work
-            </a>
-          </div>
-          {/* Desktop */}
-          <div className="hidden md:block">
-            <div
-              className="grid"
-              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
-            >
-              <div />
-              <div style={{ paddingLeft: "12px" }} className="flex gap-4 mt-[50vh]">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
-                >
-                  Let&apos;s Meet
-                </a>
-                <a
-                  href="#work"
-                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
-                >
-                  Selected Work
-                </a>
-              </div>
-              <div />
-            </div>
-          </div>
-        </div>
-
-        {/* Hero text content — over the gradient fade */}
+        {/* Hero headline — over the gradient fade, parallax */}
         <div
           ref={headRef}
-          className="fade-up relative z-20 px-3 w-full pb-12 md:pb-16 lg:pb-20 mix-blend-difference"
+          className="fade-up relative z-20 mt-auto px-3 w-full pb-4 md:pb-6 mix-blend-difference"
         >
           {/* Mobile */}
           <div className="md:hidden">
-            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase mt-8">
+            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
               Intersection of strategy, brand and digital&nbsp;products
             </h2>
           </div>
@@ -679,7 +654,7 @@ function Hero() {
         </div>
       </div>
 
-      {/* Below hero — body text */}
+      {/* Below hero — body text + CTA buttons */}
       <div className="px-3 py-24 md:py-32 lg:py-40">
         <div ref={bodyRef} className="fade-up">
           {/* Mobile body */}
@@ -690,8 +665,22 @@ function Hero() {
               navigating growth, change, or complexity. Sometimes the right move is a big
               change. Sometimes it is minor fix with huge impact.
             </p>
+            <div className="flex gap-3">
+              <a
+                href="#contact"
+                className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
+              >
+                Let&apos;s Meet
+              </a>
+              <a
+                href="#work"
+                className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+              >
+                Selected Work
+              </a>
+            </div>
           </div>
-          {/* Desktop body */}
+          {/* Desktop body + CTAs moved here (under body text) */}
           <div className="hidden md:block">
             <div
               className="grid"
@@ -699,12 +688,26 @@ function Hero() {
             >
               <div />
               <div className="col-span-2" style={{ paddingLeft: "12px" }}>
-                <p className="text-base text-white/60 leading-relaxed max-w-2xl">
+                <p className="text-base text-white/60 leading-relaxed max-w-2xl mb-14">
                   We help companies clarify who they are, how they communicate, and how their
                   products work. We work with founders, leadership teams, and organisations
                   navigating growth, change, or complexity. Sometimes the right move is a big
                   change. Sometimes it is minor fix with huge impact.
                 </p>
+                <div className="flex gap-4">
+                  <a
+                    href="#contact"
+                    className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
+                  >
+                    Let&apos;s Meet
+                  </a>
+                  <a
+                    href="#work"
+                    className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                  >
+                    Selected Work
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -716,7 +719,6 @@ function Hero() {
 
 /* ─── WORK ─── */
 function Work() {
-  const headRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.06);
   const ctaRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.04);
 
   const images = [
@@ -728,24 +730,25 @@ function Work() {
   return (
     <section id="work" data-grid="3" className="relative py-24 md:py-32 lg:py-40">
       {/* WORK SVG */}
-      <SectionSvg src="/images/work.svg" speed={-0.06} />
+      <SectionSvg src="/images/work.svg" />
 
-      {/* Desktop: 3-column staggered image gallery */}
+      {/* Desktop: 3-column staggered image gallery, 3:2 AR */}
+      {/* 1st highest (overlaps SVG a bit), 2nd lowest, 3rd mid */}
       <div className="hidden md:block mt-8 md:mt-12 mb-16 md:mb-24">
         <div
           className="grid md:items-start"
           style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
         >
-          <ParallaxBlock speed={0.04} className="mt-0">
+          <ParallaxBlock speed={SPEED.block1} className="-mt-16">
             <div style={{ paddingRight: "12px" }}>
-              <ParallaxImage src="/images/atlantik.jpg" alt="Atlantik J&T Group brand identity" aspect="3/4" sizes="33vw" speed={0.02} grayscale={false} />
+              <ParallaxImage src="/images/atlantik.jpg" alt="Atlantik J&T Group brand identity" aspect="3/2" sizes="33vw" speed={SPEED.innerImg} grayscale={false} />
               <div className="flex items-baseline justify-between mt-3 px-1">
                 <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
-                <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Atlantik J&amp;T Group · Brand Identity</p>
+                <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Atlantik J&amp;T Group</p>
               </div>
             </div>
           </ParallaxBlock>
-          <ParallaxBlock speed={0.09} className="mt-32">
+          <ParallaxBlock speed={SPEED.block2} className="mt-48">
             <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
               <ParallaxImage src="/images/project2.jpg" alt="Project 2" aspect="3/2" sizes="33vw" speed={0.03} grayscale={false} />
               <div className="flex items-baseline justify-between mt-3 px-1">
@@ -754,9 +757,9 @@ function Work() {
               </div>
             </div>
           </ParallaxBlock>
-          <ParallaxBlock speed={0.065} className="mt-16">
+          <ParallaxBlock speed={SPEED.block3} className="mt-20">
             <div style={{ paddingLeft: "12px" }}>
-              <ParallaxImage src="/images/nasecesko.jpg" alt="Naše Česko brand identity" aspect="3/2" sizes="33vw" speed={0.02} grayscale={false} />
+              <ParallaxImage src="/images/nasecesko.jpg" alt="Naše Česko brand identity" aspect="3/2" sizes="33vw" speed={SPEED.innerImg} grayscale={false} />
               <div className="flex items-baseline justify-between mt-3 px-1">
                 <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">03</p>
                 <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Naše Česko</p>
@@ -777,7 +780,7 @@ function Work() {
         <div className="md:hidden flex gap-3">
           <a
             href="#"
-            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
           >
             More Work
           </a>
@@ -788,23 +791,23 @@ function Work() {
             Experiments
           </a>
         </div>
-        {/* Desktop */}
+        {/* Desktop: CTAs fill the middle column, 12px padding each side from guide lines */}
         <div className="hidden md:block">
           <div
             className="grid"
             style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
           >
             <div />
-            <div style={{ paddingLeft: "12px" }} className="flex gap-4">
+            <div style={{ paddingLeft: "12px", paddingRight: "12px" }} className="flex gap-4">
               <a
                 href="#"
-                className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                className="flex-1 inline-flex items-center justify-center py-3 text-xs tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
               >
                 More Work
               </a>
               <a
                 href="#"
-                className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                className="flex-1 inline-flex items-center justify-center py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
               >
                 Experiments
               </a>
@@ -819,7 +822,7 @@ function Work() {
 
 /* ─── APPROACH (HOW) ─── */
 function Approach() {
-  const quoteRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.06);
+  const quoteRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", SPEED.text);
   const bodyRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.04);
 
   const approachImages = [
@@ -834,7 +837,7 @@ function Approach() {
       {/* Part 1: Text — 3 columns */}
       <div data-grid="3" className="py-24 md:py-32 lg:py-40">
         {/* HOW SVG */}
-        <SectionSvg src="/images/how.svg" speed={-0.05} />
+        <SectionSvg src="/images/how.svg" />
 
         {/* Big quote */}
         <div ref={quoteRef} className="fade-up px-3 mt-12 md:mt-12 mb-16 md:mb-20">
@@ -871,7 +874,7 @@ function Approach() {
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
             >
               Book a Meeting
             </a>
@@ -892,7 +895,7 @@ function Approach() {
                 </p>
                 <a
                   href="#contact"
-                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-3 text-xs tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
                 >
                   Book a Meeting
                 </a>
@@ -904,7 +907,7 @@ function Approach() {
 
       {/* Part 2: Images — 4 columns */}
       <div data-grid="4" className="py-16 md:py-24">
-        {/* Desktop: 4-column image grid */}
+        {/* Desktop: 4-column image grid with purple gradients */}
         <div className="hidden md:block w-full">
           <div
             className="grid md:items-start"
@@ -967,7 +970,7 @@ function Approach() {
 
 /* ─── WHAT (SERVICES) ─── */
 function What() {
-  const quoteRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", 0.06);
+  const quoteRef = useFadeIn<HTMLDivElement>(0.15, "0px 0px -60px 0px", SPEED.text);
 
   const serviceItems: AccordionItemData[] = [
     {
@@ -994,35 +997,28 @@ function What() {
 
   return (
     <section id="services" className="relative">
-      {/* WHAT SVG overlaid on image */}
-      <div data-grid="3" className="relative py-24 md:py-32 lg:py-40">
-        {/* Background image for SVG area */}
+      {/* WHAT section — 4 columns */}
+      <div data-grid="4" className="relative py-24 md:py-32 lg:py-40">
+        {/* Desktop: image 1.5 cols from left, 1:1 AR */}
         <div className="relative mb-16 md:mb-20">
-          {/* Desktop: 2/3 wide image with parallax + slightly overlapping SVG */}
           <div className="hidden md:block relative">
-            <div
-              className="grid"
-              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
-            >
-              <div className="col-span-2">
-                <ParallaxImage
-                  src="/images/what-image.jpg"
-                  alt="Studio workspace"
-                  aspect="1/1"
-                  sizes="66vw"
-                  speed={0.06}
-                  grayscale={false}
-                  className="mix-blend-exclusion"
-                />
-              </div>
-              <div />
+            {/* Image: 1.5 columns wide = 37.5% of viewport, from left edge with 12px padding */}
+            <div style={{ paddingLeft: "12px", width: "37.5%" }}>
+              <ParallaxImage
+                src="/images/what-image.jpg"
+                alt="Studio workspace"
+                aspect="1/1"
+                sizes="37.5vw"
+                speed={SPEED.bg}
+                grayscale={false}
+              />
             </div>
             {/* SVG slightly overlapping from below */}
             <div className="-mt-16 relative z-10">
-              <SectionSvg src="/images/what.svg" speed={-0.06} />
+              <SectionSvg src="/images/what.svg" />
             </div>
           </div>
-          {/* Mobile: 2/3 wide image with parallax + slightly overlapping SVG */}
+          {/* Mobile */}
           <div className="md:hidden">
             <div className="px-3" style={{ width: "66.666vw" }}>
               <ParallaxImage
@@ -1032,39 +1028,27 @@ function What() {
                 sizes="66vw"
                 speed={0.06}
                 grayscale={false}
-                className="mix-blend-exclusion"
               />
             </div>
-            {/* SVG slightly overlapping */}
             <div className="-mt-6 relative z-10">
-              <ParallaxSvg speed={-0.06}>
-                <div className="w-full overflow-hidden mix-blend-difference">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/images/what.svg"
-                    alt=""
-                    aria-hidden="true"
-                    className="md:hidden h-[86px] w-auto mx-auto"
-                    style={{ filter: "brightness(0) invert(1)" }}
-                  />
-                </div>
-              </ParallaxSvg>
+              <SectionSvg src="/images/what.svg" />
             </div>
           </div>
         </div>
 
-        {/* Accordion */}
+        {/* Accordion — centered in middle 2 cols of 4-col grid */}
         <div className="px-3 mt-8 md:mt-12 mb-24 md:mb-32">
-          {/* Desktop: 3-col grid, accordion in cols 2-3 */}
+          {/* Desktop: 4-col grid, accordion in cols 2-3 */}
           <div className="hidden md:block">
             <div
               className="grid"
-              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+              style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
             >
               <div />
               <div className="col-span-2" style={{ paddingLeft: "12px", paddingRight: "12px" }}>
                 <Accordion items={serviceItems} />
               </div>
+              <div />
             </div>
           </div>
           {/* Mobile: full width */}
@@ -1073,7 +1057,7 @@ function What() {
           </div>
         </div>
 
-        {/* Bold statement */}
+        {/* Bold statement — H2 with parallax */}
         <div ref={quoteRef} className="fade-up px-3">
           {/* Mobile */}
           <div className="md:hidden">
@@ -1085,9 +1069,9 @@ function What() {
           <div className="hidden md:block">
             <div
               className="grid"
-              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+              style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
             >
-              <div className="col-span-3" style={{ paddingLeft: "12px" }}>
+              <div className="col-span-4" style={{ paddingLeft: "12px" }}>
                 <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
                   We cover the full chain. You can work with us end to end, or only in selected&nbsp;stages.
                 </h2>
@@ -1126,43 +1110,45 @@ function Contact() {
 
   return (
     <section id="contact" className="relative">
-      {/* Top area: TALK image + SVG + people photos */}
-      <div data-grid="3" className="py-24 md:py-32 lg:py-40">
-        {/* Desktop: talk image (2/3 wide, 1:1, parallax, exclusion) + overlapping SVG, then people below */}
+      {/* Contact area — 4 columns */}
+      <div data-grid="4" className="py-24 md:py-32 lg:py-40">
+
+        {/* Desktop: 4-col layout */}
         <div className="hidden md:block relative mb-16">
-          {/* Talk image 2/3 wide */}
+          {/* Row 1: Talk image (2 cols on right, 16:9) */}
           <div
             className="grid"
-            style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+            style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
           >
-            <div className="col-span-2">
+            <div />
+            <div />
+            <div className="col-span-2" style={{ paddingRight: "12px" }}>
               <ParallaxImage
                 src="/images/talk-image.jpg"
                 alt="Studio workspace"
-                aspect="1/1"
-                sizes="66vw"
-                speed={0.06}
+                aspect="16/9"
+                sizes="50vw"
+                speed={SPEED.bg}
                 grayscale={false}
-                className="mix-blend-exclusion"
               />
             </div>
-            <div />
-          </div>
-          {/* TALK SVG slightly overlapping */}
-          <div className="-mt-16 relative z-10">
-            <SectionSvg src="/images/talk.svg" speed={-0.06} />
           </div>
 
-          {/* People row */}
+          {/* TALK SVG slightly overlapping */}
+          <div className="-mt-16 relative z-10">
+            <SectionSvg src="/images/talk.svg" />
+          </div>
+
+          {/* Row 2: People — Lukas col 1, Tomas col 3 */}
           <div
             className="grid mt-16"
-            style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+            style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
           >
-            {/* Left: Lukas */}
-            <div style={{ paddingRight: "12px" }}>
+            {/* Lukas — col 1, faster parallax, lower position */}
+            <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
               <ParallaxBlock speed={0.1}>
                 <div className="mt-32">
-                  <ParallaxImage src="/images/lukas.jpg" alt="Lukas Mikovec" aspect="3/4" sizes="33vw" speed={0.02} grayscale={false} />
+                  <ParallaxImage src="/images/lukas.jpg" alt="Lukas Mikovec" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} />
                   <div className="flex items-baseline justify-between mt-3 px-1">
                     <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
                     <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
@@ -1171,22 +1157,22 @@ function Contact() {
               </ParallaxBlock>
             </div>
             <div />
-            {/* Right: Tomas */}
-            <div style={{ paddingLeft: "12px" }}>
+            {/* Tomas — col 3, slower parallax, higher position */}
+            <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
               <ParallaxBlock speed={0.03}>
-                <ParallaxImage src="/images/tomas.jpg" alt="Tomas Prochazka" aspect="3/4" sizes="33vw" speed={0.02} grayscale={false} />
+                <ParallaxImage src="/images/tomas.jpg" alt="Tomas Prochazka" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} />
                 <div className="flex items-baseline justify-between mt-3 px-1">
                   <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Tomas Prochazka</p>
                   <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">02</p>
                 </div>
               </ParallaxBlock>
             </div>
+            <div />
           </div>
         </div>
 
-        {/* Mobile: talk image (2/3 wide, parallax, exclusion) + overlapping SVG + people */}
+        {/* Mobile: talk image + SVG + people */}
         <div className="md:hidden mb-8">
-          {/* Talk image 2/3 wide */}
           <div className="px-3" style={{ width: "66.666vw" }}>
             <ParallaxImage
               src="/images/talk-image.jpg"
@@ -1195,25 +1181,11 @@ function Contact() {
               sizes="66vw"
               speed={0.06}
               grayscale={false}
-              className="mix-blend-exclusion"
             />
           </div>
-          {/* SVG slightly overlapping */}
           <div className="-mt-6 relative z-10 mb-8">
-            <ParallaxSvg speed={-0.06}>
-              <div className="w-full overflow-hidden mix-blend-difference">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/talk.svg"
-                  alt=""
-                  aria-hidden="true"
-                  className="h-[86px] w-auto mx-auto"
-                  style={{ filter: "brightness(0) invert(1)" }}
-                />
-              </div>
-            </ParallaxSvg>
+            <SectionSvg src="/images/talk.svg" />
           </div>
-          {/* People photos with parallax */}
           <div className="grid grid-cols-2 gap-3 px-3">
             <ParallaxBlock speed={0.12}>
               <div className="mt-24">
@@ -1252,16 +1224,16 @@ function Contact() {
           </div>
         </div>
 
-        {/* Contact form */}
+        {/* Contact form — middle 2 cols, 12px padding from both sides, more top padding */}
         <div
           ref={formRef}
-          className="fade-up px-3 mt-12 md:mt-16"
+          className="fade-up px-3 mt-24 md:mt-32"
         >
-          {/* Desktop: centered in cols 2-3 of 3-col grid */}
+          {/* Desktop: centered in cols 2-3 of 4-col grid */}
           <div className="hidden md:block">
             <div
               className="grid"
-              style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
+              style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
             >
               <div />
               <div className="col-span-2" style={{ paddingLeft: "12px", paddingRight: "12px" }}>
@@ -1307,6 +1279,7 @@ function Contact() {
                 </form>
                 )}
               </div>
+              <div />
             </div>
           </div>
 
@@ -1443,7 +1416,7 @@ function Contact() {
 /* ─── PAGE ─── */
 export default function Home() {
   return (
-    <>
+    <div className="overflow-x-hidden">
       <CustomCursor />
       <GridLines />
       <Nav />
@@ -1454,6 +1427,6 @@ export default function Home() {
         <What />
         <Contact />
       </main>
-    </>
+    </div>
   );
 }
