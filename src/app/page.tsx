@@ -424,26 +424,26 @@ function SectionSvg({
   return (
     <ParallaxSvg speed={speed}>
       <div className={`w-full ${blend ? "mix-blend-difference" : ""}`}>
-        {/* Desktop: fixed height, width auto, overflow allowed */}
-        <div className="hidden md:block w-full overflow-visible">
+        {/* Desktop: 130% height, centered, width auto, overflow allowed */}
+        <div className="hidden md:flex w-full overflow-visible justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
             alt=""
             aria-hidden="true"
-            className="h-[clamp(120px,12vw,180px)] w-auto max-w-none"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="w-auto max-w-none block"
+            style={{ filter: "brightness(0) invert(1)", height: "clamp(156px, 15.6vw, 234px)" }}
           />
         </div>
-        {/* Mobile: 86px, centered, overflow hidden */}
-        <div className="md:hidden w-full overflow-hidden h-[86px] flex items-center justify-center">
+        {/* Mobile: 86px fixed, centered, overflow hidden */}
+        <div className="md:hidden w-full overflow-hidden flex items-center justify-center" style={{ height: "86px" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
             alt=""
             aria-hidden="true"
-            className="h-[86px] w-auto"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="max-w-none block"
+            style={{ filter: "brightness(0) invert(1)", height: "86px" }}
           />
         </div>
       </div>
@@ -616,16 +616,16 @@ function Hero() {
             src="/images/studio.svg"
             alt=""
             aria-hidden="true"
-            className="h-[clamp(120px,12vw,180px)] w-auto max-w-none select-none hidden md:block"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="w-auto max-w-none select-none hidden md:block"
+            style={{ filter: "brightness(0) invert(1)", height: "clamp(156px, 15.6vw, 234px)" }}
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/studio.svg"
             alt=""
             aria-hidden="true"
-            className="md:hidden h-[86px] w-auto mx-auto object-contain select-none"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="md:hidden max-w-none select-none"
+            style={{ filter: "brightness(0) invert(1)", height: "86px" }}
           />
         </ParallaxSvg>
 
