@@ -424,15 +424,17 @@ function SectionSvg({
   return (
     <ParallaxSvg speed={speed}>
       <div className={`w-full ${blend ? "mix-blend-difference" : ""}`}>
-        {/* Desktop: consistent height, overflow hidden */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-auto hidden md:block"
-          style={{ filter: "brightness(0) invert(1)" }}
-        />
+        {/* Desktop: fixed height, width auto, overflow allowed */}
+        <div className="hidden md:block w-full overflow-visible">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            aria-hidden="true"
+            className="h-[clamp(120px,12vw,180px)] w-auto max-w-none"
+            style={{ filter: "brightness(0) invert(1)" }}
+          />
+        </div>
         {/* Mobile: 86px, centered, overflow hidden */}
         <div className="md:hidden w-full overflow-hidden h-[86px] flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -608,13 +610,13 @@ function Hero() {
         <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#1C1B1A] via-[#1C1B1A]/60 to-transparent z-[2]" />
 
         {/* STUDIO SVG overlay — slowest parallax, normal blend mode */}
-        <ParallaxSvg speed={SPEED.svg} className="absolute inset-0 flex items-center justify-center z-10 px-4 md:px-8 pointer-events-none">
+        <ParallaxSvg speed={SPEED.svg} className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/studio.svg"
             alt=""
             aria-hidden="true"
-            className="w-full h-auto max-h-[45vh] object-contain select-none hidden md:block"
+            className="h-[clamp(120px,12vw,180px)] w-auto max-w-none select-none hidden md:block"
             style={{ filter: "brightness(0) invert(1)" }}
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -630,12 +632,12 @@ function Hero() {
         {/* Hero headline — over the gradient fade, parallax */}
         <div
           ref={headRef}
-          className="fade-up relative z-20 mt-auto px-3 w-full pb-4 md:pb-6 mix-blend-difference"
+          className="fade-up relative z-20 mt-auto px-3 w-full pb-4 md:pb-6 mix-blend-difference overflow-hidden"
         >
           {/* Mobile */}
           <div className="md:hidden">
-            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
-              Intersection of strategy, brand and digital&nbsp;products
+            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase break-words">
+              Intersection of strategy, brand and digital products
             </h2>
           </div>
           {/* Desktop */}
@@ -645,7 +647,7 @@ function Hero() {
               style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
             >
               <div className="col-span-3" style={{ paddingLeft: "12px" }}>
-                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
+                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase max-w-[75vw]">
                   Intersection of strategy, brand and digital&nbsp;products
                 </h2>
               </div>
@@ -665,18 +667,18 @@ function Hero() {
               navigating growth, change, or complexity. Sometimes the right move is a big
               change. Sometimes it is minor fix with huge impact.
             </p>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <a
                 href="#contact"
-                className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
+                className="flex items-center justify-center py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
               >
-                Let&apos;s Meet
+                Meet us
               </a>
               <a
                 href="#work"
-                className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+                className="flex items-center justify-center py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
               >
-                Selected Work
+                Work
               </a>
             </div>
           </div>
@@ -777,16 +779,16 @@ function Work() {
       {/* CTAs */}
       <div ref={ctaRef} className="fade-up px-3">
         {/* Mobile */}
-        <div className="md:hidden flex gap-3">
+        <div className="md:hidden grid grid-cols-2 gap-3">
           <a
             href="#"
-            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
+            className="flex items-center justify-center py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal bg-white text-[#1C1B1A] rounded-full hover:bg-white/90 transition-colors"
           >
-            More Work
+            Work
           </a>
           <a
             href="#"
-            className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center py-2.5 text-[14px] tracking-[0.15em] uppercase font-normal border border-white text-white rounded-full hover:bg-white/10 transition-colors"
           >
             Experiments
           </a>
@@ -843,8 +845,8 @@ function Approach() {
         <div ref={quoteRef} className="fade-up px-3 mt-12 md:mt-12 mb-16 md:mb-20">
           {/* Mobile */}
           <div className="md:hidden">
-            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
-              Every project is different, the way we work stays&nbsp;consistent.
+            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase break-words">
+              Every project is different, the way we work stays consistent.
             </h2>
           </div>
           {/* Desktop */}
@@ -854,7 +856,7 @@ function Approach() {
               style={{ gridTemplateColumns: "33.333% 33.333% 33.334%" }}
             >
               <div className="col-span-3" style={{ paddingLeft: "12px" }}>
-                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
+                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase max-w-[75vw]">
                   Every project is different, the way we work stays&nbsp;consistent.
                 </h2>
               </div>
@@ -1061,8 +1063,8 @@ function What() {
         <div ref={quoteRef} className="fade-up px-3">
           {/* Mobile */}
           <div className="md:hidden">
-            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
-              We cover the full chain. You can work with us end to end, or only in selected&nbsp;stages.
+            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-tight text-white uppercase break-words">
+              We cover the full chain. You can work with us end to end, or only in selected stages.
             </h2>
           </div>
           {/* Desktop */}
@@ -1072,7 +1074,7 @@ function What() {
               style={{ gridTemplateColumns: "25% 25% 25% 25%" }}
             >
               <div className="col-span-4" style={{ paddingLeft: "12px" }}>
-                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase">
+                <h2 className="text-[42px] lg:text-[52px] font-semibold leading-[1.15] tracking-tight text-white uppercase max-w-[75vw]">
                   We cover the full chain. You can work with us end to end, or only in selected&nbsp;stages.
                 </h2>
               </div>
@@ -1148,7 +1150,7 @@ function Contact() {
             <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
               <ParallaxBlock speed={0.1}>
                 <div className="mt-32">
-                  <ParallaxImage src="/images/lukas.jpg" alt="Lukas Mikovec" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} />
+                  <ParallaxImage src="/images/lukas.jpg" alt="Lukas Mikovec" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} className="mix-blend-lighten" />
                   <div className="flex items-baseline justify-between mt-3 px-1">
                     <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Lukas Mikovec</p>
                     <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">01</p>
@@ -1160,7 +1162,7 @@ function Contact() {
             {/* Tomas — col 3, slower parallax, higher position */}
             <div style={{ paddingLeft: "12px", paddingRight: "12px" }}>
               <ParallaxBlock speed={0.03}>
-                <ParallaxImage src="/images/tomas.jpg" alt="Tomas Prochazka" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} />
+                <ParallaxImage src="/images/tomas.jpg" alt="Tomas Prochazka" aspect="3/4" sizes="25vw" speed={SPEED.innerImg} grayscale={false} className="mix-blend-lighten" />
                 <div className="flex items-baseline justify-between mt-3 px-1">
                   <p className="text-[10px] tracking-[0.15em] text-white/40 uppercase">Tomas Prochazka</p>
                   <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">02</p>
@@ -1189,7 +1191,7 @@ function Contact() {
           <div className="grid grid-cols-2 gap-3 px-3">
             <ParallaxBlock speed={0.12}>
               <div className="mt-24">
-                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                <div className="relative overflow-hidden mix-blend-lighten" style={{ aspectRatio: "3/4" }}>
                   <Image
                     src="/images/lukas.jpg"
                     alt="Lukas Mikovec"
@@ -1206,7 +1208,7 @@ function Contact() {
             </ParallaxBlock>
             <ParallaxBlock speed={0.03}>
               <div className="-mt-12">
-                <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                <div className="relative overflow-hidden mix-blend-lighten" style={{ aspectRatio: "3/4" }}>
                   <Image
                     src="/images/tomas.jpg"
                     alt="Tomas Prochazka"
