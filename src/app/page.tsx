@@ -414,13 +414,18 @@ function ParallaxSvg({
    ═══════════════════════════════════════════ */
 function SectionSvg({
   src,
+  mobileSrc,
+  mobileHeight = 80,
   speed = SPEED.svg,
   blend = true,
 }: {
   src: string;
+  mobileSrc?: string;
+  mobileHeight?: number;
   speed?: number;
   blend?: boolean;
 }) {
+  const mH = `${mobileHeight}px`;
   return (
     <ParallaxSvg speed={speed}>
       <div className={`w-full ${blend ? "mix-blend-difference" : ""}`}>
@@ -435,15 +440,15 @@ function SectionSvg({
             style={{ filter: "brightness(0) invert(1)", height: "clamp(156px, 15.6vw, 234px)" }}
           />
         </div>
-        {/* Mobile: 86px fixed, centered, overflow hidden */}
-        <div className="md:hidden w-full overflow-hidden flex items-center justify-center" style={{ height: "86px" }}>
+        {/* Mobile: fixed height, centered, overflow hidden */}
+        <div className="md:hidden w-full overflow-hidden flex items-center justify-center" style={{ height: mH }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={src}
+            src={mobileSrc || src}
             alt=""
             aria-hidden="true"
             className="max-w-none block"
-            style={{ filter: "brightness(0) invert(1)", height: "86px" }}
+            style={{ filter: "brightness(0) invert(1)", height: mH }}
           />
         </div>
       </div>
@@ -621,11 +626,11 @@ function Hero() {
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/studio.svg"
+            src="/images/studio-mobile.svg"
             alt=""
             aria-hidden="true"
             className="md:hidden max-w-none select-none"
-            style={{ filter: "brightness(0) invert(1)", height: "86px" }}
+            style={{ filter: "brightness(0) invert(1)", height: "172px" }}
           />
         </ParallaxSvg>
 
